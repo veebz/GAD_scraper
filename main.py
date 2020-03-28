@@ -47,11 +47,10 @@ def db_create_category(conn, category):
     :param category:
     :return:
     """
-    sql = ''' INSERT INTO categories(name,parent,timestamp_scrape)
-              VALUES(?,?,?) '''
+    sql = ''' INSERT INTO categories(name,parent,timestamp_scrape) VALUES(?,?,?) '''
+    print(category)
     cur = conn.cursor()
     cur.execute(sql, category)
-    print("new category created successfully")
     return cur.lastrowid
 
 def save_html(url, filename):
@@ -145,14 +144,14 @@ if conn is not None:
         soup_start = BeautifulSoup(start, "html.parser")
 
         for a in soup_start.find_all("a", "hSRGPd", href=True, jslog=True)[1:19]:
-
+            name_oberkategorie = a['aria-label']
             global label_oberkategorie
             label_oberkategorie = make_label(a['aria-label'])
             url = make_url(a['href'])
             filename = create_filename(label_oberkategorie)
 
             # Kategorien in Datenbank ablegen
-            category = (label_oberkategorie, 'no parent', zeitstempel);
+            category = (name_oberkategorie, 'no parent', zeitstempel)
             category_id = db_create_category(conn, category)
 
             # htmls für Oberkategorien speichern
