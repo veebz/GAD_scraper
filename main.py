@@ -51,6 +51,7 @@ def db_create_category(conn, category):
     print(category)
     cur = conn.cursor()
     cur.execute(sql, category)
+    conn.commit()
     return cur.lastrowid
 
 def save_html(url, filename):
@@ -171,7 +172,7 @@ if conn is not None:
                 save_html(url, filename_unterkategorie)
 
                 # Unterkategorien in Datenbank ablegen
-                category = (label_oberkategorie, label_unterkategorie, zeitstempel);
+                category = (label_oberkategorie, label_unterkategorie, zeitstempel)
                 category_id = db_create_category(conn, category)
 
                 # htmls nach Actions durchsuchen und Daten ablegen
