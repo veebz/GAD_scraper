@@ -32,41 +32,22 @@ def create_table(conn, create_table_sql):
 
 
 def main():
-    database = "pythonsqlite.db"
+    database = "google_assistant_directory.db"
 
-    sql_create_categories_table = """ CREATE TABLE IF NOT EXISTS categories (
+    sql_create_categories_table = """CREATE TABLE IF NOT EXISTS categories (
                                         id integer PRIMARY KEY,
                                         name text NOT NULL,
-                                        parent text,
-                                        timestamp_scrape text
-                                    ); """
+                                        parent text
+                                    );"""
 
-#    sql_create_tasks_table = """CREATE TABLE IF NOT EXISTS actions-categories (
-#                                    id integer PRIMARY KEY,
-#                                    name text NOT NULL,
-#                                    priority integer,
-#                                    status_id integer NOT NULL,
-#                                    project_id integer NOT NULL,
-#                                    begin_date text NOT NULL,
-#                                    end_date text NOT NULL,
-#                                    FOREIGN KEY (project_id) REFERENCES projects (id)
-#                                );"""
+    sql_create_actions_table = """CREATE TABLE IF NOT EXISTS actions (id integer PRIMARY KEY, name text UNIQUE NOT NULL, devices text
+                                );"""
 
-    sql_create_actions_table = """CREATE TABLE IF NOT EXISTS actions (
-                                    id integer PRIMARY KEY,
-                                    name text NOT NULL,
-                                    priority integer,
-                                    company text NOT NULL,
-                                    description text NOT NULL,
-                                    devices text,
-                                    actions text,
-                                    rating integer,
-                                    ranking_view_all integer,
-                                    ranking_category integer,
-                                    ranking_startseite integer,
-                                    timestamp_scrape text NOT NULL,
-                                    category_id integer NOT NULL,
-                                    FOREIGN KEY (category_id) REFERENCES categories (id)
+    sql_create_action_category = """CREATE TABLE IF NOT EXISTS action_category (
+                                    action_id integer,
+                                    category_id integer,
+                                    FOREIGN KEY (action_id) REFERENCES actions(id),
+                                    FOREIGN KEY (category_id) REFERENCES categories(id)
                                 );"""
 
     # create a database connection
@@ -74,11 +55,14 @@ def main():
 
     # create tables
     if conn is not None:
-        # create projects table
+        # create categories table
         create_table(conn, sql_create_categories_table)
 
-        # create tasks table
+        # create actions table
         create_table(conn, sql_create_actions_table)
+
+        # create action_category table
+        create_table(conn, sql_create_action_category)
     else:
         print("Error! cannot create the database connection.")
 
@@ -87,6 +71,4 @@ if __name__ == '__main__':
     main()
 
 
-    ## actions: id, title, company, description, details, available devices, proposed actions, rating, ranking in view all, ranking in kategorie?, ranking auf startseite
-    ## categories: id, title, parent
-    ## action-category: id
+
