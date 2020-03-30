@@ -33,7 +33,7 @@ def db_create_action(conn, action):
     :param action:
     :return: id of new action in the table
     """
-    sql = ''' INSERT OR IGNORE INTO actions(name, devices) VALUES(?,?) '''
+    sql = ''' INSERT OR IGNORE INTO actions(name, company, devices, actions, ratings) VALUES(?,?,?,?,?) '''
     print(action)
     cur = conn.cursor()
     cur.execute(sql, action)
@@ -196,6 +196,7 @@ if conn is not None:
                 name_subcategory = "".join(name_subcategory)
                 filename_subcategory = create_filename(name_subcategory, name_topcategory)
                 url = make_url(b['data-link'])
+                print(url)
 
                 # Save the subcategories to the database
                 category = (name_subcategory, name_topcategory)
@@ -220,7 +221,8 @@ if conn is not None:
                     name_service = name_service[index_c]
                     filename_service = create_filename(name_service, 'service')
                     print(filename_service)
-                    url = make_url(a['href'])
+                    url = make_url(c['href'])
+                    print("service url: " + url)
 
                     # Save the html site belonging to each action
                     save_html(url, filename_service)
@@ -230,37 +232,42 @@ if conn is not None:
                     soup_service = BeautifulSoup(sourcecode_service, "html.parser")
 
                     index_x = 0
-                    for x in soup_service.find_all("div", "VTLJT"):
-                        # extract company name
-                        # company_tags = x.find_all("div", "lUcxUb CbqDob")
-                        # company = company_tags[1]
-                        #print(company)
+                    x = soup_service.find("div", "VTLJT")
+                    # extract company name
+                    company_tags = x.find_all("div", "lUcxUb CbqDob")
+                    company = company_tags[0].contents
+                    company = "".join(company)
+                    print("company: " + company)
 
-                        # extract devices and make string
-                        #devices_tags = x.find_all("div", "rkJR4e CdFZQ")
-                        #devices = devices_tags
-                        #devices = ", ".join(devices)
-                        #print(devices)
+                    # extract devices and make string
+                    devices_tags = x.find_all("div", "rkJR4e CdFZQ")
+                    deviceslist = ""
+                    for i in devices_tags[1:len(devices_tags)]:
+                        devices = str(i.contents)
+                        deviceslist += devices
+                    print("devices: " + deviceslist)
 
-                        ## extract actions
-                        #for f in soup_actions.find_all("span", "bCHKrf"):
-                        #    actions = f.contents
-                        #    actions = ", ".join(invocations)
-                        #    print(actions)
-                        #
-                        ## extract rating
-                        #for g in soup_actions.find_all("div", "NRNQAb"):
-                        #    rating = g[0].contents
-                        #    print(rating)
+                    # extract actions
+                    action_tags = x.find_all("span", "bCHKrf")
+                    actionlist = ""
+                    for a in action_tags:
+                        action = str(a.contents)
+                        actionlist += action
+                    print("actions: " + actionlist)
 
-                        # Save the actions to the database
-                        print('here')
-                        db_action = (name_service, 'service')
-                        action_id = db_create_action(conn, db_action)
+                    # extract rating
+                    rating_tags = x.find_all("div", "NRNQAb")
+                    rating = rating_tags[0].contents
+                    rating = "".join(rating)
+                    print("rating: " + rating)
 
-                        # Save the category-action relationship
-                        action_category = (action_id, category_id)
-                        category_action_id = db_create_action_category_relation(conn, action_category)
+                    # Save the services to the database
+                    db_action = (name_service, company, deviceslist, actionlist, rating)
+                    action_id = db_create_action(conn, db_action)
+
+                    # Save the category-action relationship
+                    action_category = (action_id, category_id)
+                    category_action_id = db_create_action_category_relation(conn, action_category)
 
 
                 index_c = index + 1

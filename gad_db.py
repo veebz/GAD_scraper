@@ -40,7 +40,8 @@ def main():
                                         parent text
                                     );"""
 
-    sql_create_actions_table = """CREATE TABLE IF NOT EXISTS actions (id integer PRIMARY KEY, name text UNIQUE NOT NULL, devices text
+    sql_create_actions_table = """CREATE TABLE IF NOT EXISTS actions (id integer PRIMARY KEY, name text UNIQUE NOT NULL, 
+                                        company text, devices text, actions text, ratings text
                                 );"""
 
     sql_create_action_category = """CREATE TABLE IF NOT EXISTS action_category (
