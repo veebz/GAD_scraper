@@ -141,17 +141,17 @@ def make_url(url_piece):
 
 # Initialize global variables
 global scrape_directory
-global name_oberkategorie
-global name_unterkategorie
-global soup_oberkategorie
+global name_topcategory
+global name_subcategory
+global soup_topcategory
 global index
 
 # Create timestamp for scrape
 dt_date = datetime.datetime.now()
-zeitstempel = dt_date.strftime('%d-%m-%Y-%I-%M')
+timestamp = dt_date.strftime('%d-%m-%Y-%I-%M')
 
 # Create a new directory for the html_files
-scrape_directory = ''.join(['./', zeitstempel, '/'])
+scrape_directory = ''.join(['./', timestamp, '/'])
 dirname = os.path.dirname(scrape_directory)
 if not os.path.exists(dirname):
     os.mkdir(dirname)
@@ -172,66 +172,65 @@ if conn is not None:
 
         # Browse the start page for categories and extract their names
         for a in soup_start.find_all("a", "hSRGPd", href=True, jslog=True)[1:19]:
-            name_oberkategorie = a['aria-label']
-            name_oberkategorie = "".join(name_oberkategorie)
-            # name_oberkategorie = name_oberkategorie[0:len(name_oberkategorie)]
+            name_topcategory = a['aria-label']
+            name_topcategory = "".join(name_topcategory)
             url = make_url(a['href'])
-            filename = create_filename(name_oberkategorie)
+            filename = create_filename(name_topcategory)
 
             # Save the categories to the database
-            category = (name_oberkategorie, 'no parent')
+            category = (name_topcategory, 'no parent')
             category_id = db_create_category(conn, category)
 
             # Save the html site belonging to each category
             save_html(url, filename)
 
             # Open the new html files
-            sourcecode_oberkategorie = open_from_directory(filename)
-            soup_oberkategorie = BeautifulSoup(sourcecode_oberkategorie, "html.parser")
+            sourcecode_topcategory = open_from_directory(filename)
+            soup_topcategory = BeautifulSoup(sourcecode_topcategory, "html.parser")
 
             # Browse for subcategories
-            for b in soup_oberkategorie.find_all("div", "dLQiFb"):
+            for b in soup_topcategory.find_all("div", "dLQiFb"):
 
                 # Save the html site belonging to each subcategory
-                name_unterkategorie = b['data-title']
-                name_unterkategorie = "".join(name_unterkategorie)
-                filename_unterkategorie = create_filename(name_unterkategorie, name_oberkategorie)
+                name_subcategory = b['data-title']
+                name_subcategory = "".join(name_subcategory)
+                filename_subcategory = create_filename(name_subcategory, name_topcategory)
                 url = make_url(b['data-link'])
 
                 # Save the subcategories to the database
-                category = (name_unterkategorie, name_oberkategorie)
+                category = (name_subcategory, name_topcategory)
                 category_id = db_create_category(conn, category)
 
                 # Save the html site belonging to each subcategory
-                save_html(url, filename_unterkategorie)
+                save_html(url, filename_subcategory)
 
                 # Open the new html files
-                sourcecode_unterkategorie = open_from_directory(filename_unterkategorie)
-                soup_unterkategorie = BeautifulSoup(sourcecode_unterkategorie, "html.parser")
+                sourcecode_subcategory = open_from_directory(filename_subcategory)
+                soup_subcategory = BeautifulSoup(sourcecode_subcategory, "html.parser")
 
                 # Browse for actions
                 index_c = 0
 
                 # search for all links pointing to actions (those including the string "/services/")
-                for c in soup_unterkategorie.find_all("a", href = re.compile(r'services/')):
+                for c in soup_subcategory.find_all("a", href = re.compile(r'services/')):
 
                     # search for all action titles and convert to labels and filenames
                     div_tags = c.find_all("div", "FdWgBb")
-                    action_name = div_tags[index_c].contents
-                    action_name = action_name[index_c]
-                    action_filename = create_filename(action_name, 'service')
-                    print(action_filename)
+                    name_service = div_tags[index_c].contents
+                    name_service = name_service[index_c]
+                    filename_service = create_filename(name_service, 'service')
+                    print(filename_service)
                     url = make_url(a['href'])
 
                     # Save the html site belonging to each action
-                    save_html(url, action_filename)
+                    save_html(url, filename_service)
 
                     # Open the new html files
-                    sourcecode_actions = open_from_directory(action_filename)
-                    soup_actions = BeautifulSoup(sourcecode_actions, "html.parser")
+                    sourcecode_service = open_from_directory(filename_service)
+                    soup_service = BeautifulSoup(sourcecode_service, "html.parser")
 
                     index_x = 0
-                    for x in soup_actions.find_all("div", "VTLJT"):
+                    for x in soup_service.find_all("div", "VTLJT"):
                         # extract company name
                         # company_tags = x.find_all("div", "lUcxUb CbqDob")
                         # company = company_tags[1]
@@ -245,9 +244,9 @@ if conn is not None:
 
                         ## extract actions
                         #for f in soup_actions.find_all("span", "bCHKrf"):
-                        #    invocations = f.contents
-                        #    invocations = ", ".join(invocations)
-                        #    print(invocations)
+                        #    actions = f.contents
+                        #    actions = ", ".join(invocations)
+                        #    print(actions)
                         #
                         ## extract rating
                         #for g in soup_actions.find_all("div", "NRNQAb"):
@@ -255,9 +254,9 @@ if conn is not None:
                         #    print(rating)
 
                         # Save the actions to the database
-                        print('hier')
-                        action = (action_name, 'service')
-                        action_id = db_create_action(conn, action)
+                        print('here')
+                        db_action = (name_service, 'service')
+                        action_id = db_create_action(conn, db_action)
 
                         # Save the category-action relationship
                         action_category = (action_id, category_id)
