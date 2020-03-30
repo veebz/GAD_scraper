@@ -7,6 +7,7 @@ import urllib.request
 import re
 import os
 import datetime
+from pprint import pprint
 
 # Scraper for the Google Assistant Directory (Web version)
 
@@ -104,7 +105,7 @@ def open_from_directory(filename):
         html_string = f.read()
         return html_string
 
-def create_filename(string_filename, *string_topcategory):
+def create_filename(string_filename, string_topcategory=False):
     """ Deletes all special characters and lowers capital letters from a string
         and makes a html filename out of it.
         If topcategory is set, the filename will include "-subcategory", if not
@@ -115,7 +116,7 @@ def create_filename(string_filename, *string_topcategory):
     filename = re.sub("[^A-Za-z0-9]+", "", str(string_filename))
     filename = filename.lower()
 
-    if not string_topcategory:
+    if string_topcategory == False:
         filename += "-category.html"
     else:
         if string_topcategory == 'service':
@@ -219,6 +220,8 @@ if conn is not None:
                     div_tags = c.find_all("div", "FdWgBb")
                     name_service = div_tags[index_c].contents
                     name_service = name_service[index_c]
+
+                    print('yolo')
                     filename_service = create_filename(name_service, 'service')
                     print(filename_service)
                     url = make_url(c['href'])
