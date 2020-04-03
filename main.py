@@ -77,16 +77,16 @@ def save_html(url, filename):
     """
     browser = webdriver.Firefox()
     browser.get(url)
-    # browser.execute_script("document.querySelector('.y3IDJd').scrollTop=10000000")
-    # time.sleep(3)
-    #browser.execute_script("document.querySelector('.y3IDJd').scrollTop=10000000")
-    #time.sleep(3)
-    #browser.execute_script("document.querySelector('.y3IDJd').scrollTop=10000000")
-    #time.sleep(3)
-    #browser.execute_script("document.querySelector('.y3IDJd').scrollTop=10000000")
-    #time.sleep(3)
-    #browser.execute_script("document.querySelector('.y3IDJd').scrollTop=10000000")
-    #time.sleep(3)
+    browser.execute_script("document.querySelector('.y3IDJd').scrollTop=10000000")
+    time.sleep(3)
+    browser.execute_script("document.querySelector('.y3IDJd').scrollTop=10000000")
+    time.sleep(3)
+    browser.execute_script("document.querySelector('.y3IDJd').scrollTop=10000000")
+    time.sleep(3)
+    browser.execute_script("document.querySelector('.y3IDJd').scrollTop=10000000")
+    time.sleep(3)
+    browser.execute_script("document.querySelector('.y3IDJd').scrollTop=10000000")
+    time.sleep(3)
     file_in_directory = os.path.join(scrape_directory, filename)
     with open(file_in_directory, "w+") as f:
         sourcecode = browser.page_source
@@ -104,7 +104,7 @@ def open_from_directory(filename):
         html_string = f.read()
         return html_string
 
-def create_filename(string_filename, *string_topcategory):
+def create_filename(string_filename, string_topcategory=False, string_subcategory = False, string_type = False):
     """ Deletes all special characters and lowers capital letters from a string
         and makes a html filename out of it.
         If topcategory is set, the filename will include "-subcategory", if not
@@ -115,10 +115,18 @@ def create_filename(string_filename, *string_topcategory):
     filename = re.sub("[^A-Za-z0-9]+", "", str(string_filename))
     filename = filename.lower()
 
-    if not string_topcategory:
+    if string_topcategory == False:
         filename += "-category.html"
     else:
-        if string_topcategory == 'service':
+        if string_type == 'service':
+            topcategory = re.sub("[^A-Za-z0-9]+", "", str(string_topcategory))
+            topcategory = topcategory.lower()
+            subcategory = re.sub("[^A-Za-z0-9]+", "", str(string_subcategory))
+            subcategory = subcategory.lower()
+            filename += "-"
+            filename += topcategory
+            filename += "-"
+            filename += subcategory
             filename += "-service.html"
         else:
             topcategory = re.sub("[^A-Za-z0-9]+", "", str(string_topcategory))
@@ -205,21 +213,19 @@ if conn is not None:
                 # Save the html site belonging to each subcategory
                 save_html(url, filename_subcategory)
 
+                # Browse for actions on "View All" pages
                 # Open the new html files
                 sourcecode_subcategory = open_from_directory(filename_subcategory)
                 soup_subcategory = BeautifulSoup(sourcecode_subcategory, "html.parser")
 
-                # Browse for actions
-                index_c = 0
-
                 # search for all links pointing to actions (those including the string "/services/")
-                for c in soup_subcategory.find_all("a", href = re.compile(r'services/')):
+                for c in soup_subcategory.find_all("a", href=re.compile(r'services/')):
 
                     # search for all action titles and convert to labels and filenames
                     div_tags = c.find_all("div", "FdWgBb")
-                    name_service = div_tags[index_c].contents
-                    name_service = name_service[index_c]
-                    filename_service = create_filename(name_service, 'service')
+                    name_service = div_tags[0].contents
+                    name_service = name_service[0]
+                    filename_service = create_filename(name_service, name_topcategory, name_subcategory, 'service')
                     print(filename_service)
                     url = make_url(c['href'])
                     print("service url: " + url)
@@ -231,8 +237,8 @@ if conn is not None:
                     sourcecode_service = open_from_directory(filename_service)
                     soup_service = BeautifulSoup(sourcecode_service, "html.parser")
 
-                    index_x = 0
                     x = soup_service.find("div", "VTLJT")
+
                     # extract company name
                     company_tags = x.find_all("div", "lUcxUb CbqDob")
                     company = company_tags[0].contents
@@ -269,8 +275,67 @@ if conn is not None:
                     action_category = (action_id, category_id)
                     category_action_id = db_create_action_category_relation(conn, action_category)
 
+                # Browse for proposed actions for each intent displayed in category overview
 
-                index_c = index + 1
+                for d in b.find_all("a", href = re.compile(r'services/')):
+
+                     # Save the name of each action displayed in the overview
+                     for e in d.find_all("div", "FdWgBb"):
+
+                         # overview_actions_tags = b.find_all("div", "FdWgBb")
+                         # name_service_overview = overview_actions_tags[0].contents
+                         name_service_overview = e.contents
+                         name_service_overview = name_service_overview[0]
+                         filename_service_overview = create_filename(name_service_overview, name_topcategory, name_subcategory, 'service')
+                         print(filename_service_overview)
+                         url_overview = make_url(d['href'])
+                         print("service url_overview: " + url_overview)
+
+                         # Save the html site belonging to each action
+                         save_html(url_overview, filename_service_overview)
+
+                         # Open the new html files
+                         sourcecode_service_overview = open_from_directory(filename_service_overview)
+                         soup_service_overview = BeautifulSoup(sourcecode_service_overview, "html.parser")
+
+                         #index_x = 0
+                         x = soup_service_overview.find("div", "VTLJT")
+
+                         # extract company name
+                         company_tags = x.find_all("div", "lUcxUb CbqDob")
+                         company = company_tags[0].contents
+                         company = "".join(company)
+                         print("company: " + company)
+
+                         # extract devices and make string
+                         devices_tags = x.find_all("div", "rkJR4e CdFZQ")
+                         deviceslist = ""
+                         for i in devices_tags[1:len(devices_tags)]:
+                             devices = str(i.contents)
+                             deviceslist += devices
+                         print("devices: " + deviceslist)
+
+                         # extract actions
+                         action_tags = x.find_all("span", "bCHKrf")
+                         actionlist = ""
+                         for a in action_tags:
+                             action = str(a.contents)
+                             actionlist += action
+                         print("actions: " + actionlist)
+
+                         # extract rating
+                         rating_tags = x.find_all("div", "NRNQAb")
+                         rating = rating_tags[0].contents
+                         rating = "".join(rating)
+                         print("rating: " + rating)
+
+                         # Save the services from the overview to the database
+                         db_action = (name_service_overview, company, deviceslist, actionlist, rating)
+                         action_id = db_create_action(conn, db_action)
+
+                         # Save the category-action relationship
+                         action_category = (action_id, category_id)
+                         category_action_id = db_create_action_category_relation(conn, action_category)
 
     conn.close()
 
