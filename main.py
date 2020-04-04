@@ -7,6 +7,7 @@ import urllib.request
 import re
 import os
 import datetime
+from pprint import pprint
 
 # Scraper for the Google Assistant Directory (Web version)
 
@@ -226,6 +227,7 @@ if conn is not None:
                     name_service = div_tags[0].contents
                     name_service = name_service[0]
                     filename_service = create_filename(name_service, name_topcategory, name_subcategory, 'service')
+
                     print(filename_service)
                     url = make_url(c['href'])
                     print("service url: " + url)
