@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from gad_db import *
 import time
-import urllib.request
+# import urllib.request
 import re
 import os
 import datetime
