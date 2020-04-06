@@ -1,6 +1,7 @@
 #! python
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 from gad_db import *
 import time
 # import urllib.request
@@ -76,7 +77,7 @@ def save_html(url, filename):
     :param url:
     :param filename:
     """
-    browser = webdriver.Firefox()
+    browser = webdriver.Firefox(options=options)
     browser.get(url)
     browser.execute_script("document.querySelector('.y3IDJd').scrollTop=10000000")
     time.sleep(3)
@@ -154,6 +155,9 @@ global name_topcategory
 global name_subcategory
 global soup_topcategory
 global index
+
+options = Options()
+options.headless = True
 
 # Create timestamp for scrape
 dt_date = datetime.datetime.now()
