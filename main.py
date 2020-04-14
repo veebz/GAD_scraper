@@ -2,6 +2,7 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+import geckodriver_autoinstaller
 from gad_db import *
 import time
 # import urllib.request
@@ -9,6 +10,8 @@ import re
 import os
 import datetime
 from pprint import pprint
+
+geckodriver_autoinstaller.install()
 
 # Scraper for the Google Assistant Directory (Web version)
 
@@ -48,7 +51,7 @@ def db_create_category(conn, category):
     :param category:
     :return: id of new category in the table
     """
-    sql = ''' INSERT INTO categories(name,parent) VALUES(?,?) '''
+    sql = ''' INSERT OR IGNORE INTO categories(name,parent) VALUES(?,?) '''
     print(category)
     cur = conn.cursor()
     cur.execute(sql, category)
@@ -63,7 +66,7 @@ def db_create_action_category_relation(conn, actioncategory):
     :param actioncategory:
     :return: id of new action-category-relationship in the table
     """
-    sql = ''' INSERT INTO action_category(action_id,category_id) VALUES(?,?) '''
+    sql = ''' INSERT OR IGNORE INTO action_category(action_id,category_id) VALUES(?,?) '''
     cur = conn.cursor()
     cur.execute(sql, actioncategory)
     conn.commit()
@@ -184,7 +187,7 @@ if conn is not None:
         soup_start = BeautifulSoup(start, "html.parser")
 
         # Browse the start page for categories and extract their names
-        for a in soup_start.find_all("a", "hSRGPd", href=True, jslog=True)[1:19]:
+        for a in soup_start.find_all("a", "hSRGPd", href=True, jslog=True)[4:19]:
             name_topcategory = a['aria-label']
             name_topcategory = "".join(name_topcategory)
             url = make_url(a['href'])
