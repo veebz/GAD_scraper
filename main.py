@@ -5,10 +5,11 @@ from selenium.webdriver.firefox.options import Options
 import geckodriver_autoinstaller
 from gad_db import *
 import time
-# import urllib.request
+import urllib.request
 import re
 import os
 import datetime
+from retrying import retry
 from pprint import pprint
 
 geckodriver_autoinstaller.install()
@@ -72,6 +73,7 @@ def db_create_action_category_relation(conn, actioncategory):
     conn.commit()
     return cur.lastrowid
 
+@retry
 def save_html(url, filename):
     """ Saves the url to filename into a new folder named according to the
         timestamp of the current scrape. In order to load all contents
