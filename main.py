@@ -278,7 +278,8 @@ if conn is not None:
                         rating = rating_tags[0].contents
                         rating = "".join(rating)
                         print("rating: " + rating)
-                    else rating = ""
+                    else:
+                        rating = ""
 
                     # Save the services to the database
                     db_action = (name_service, company, deviceslist, actionlist, rating)
@@ -342,7 +343,8 @@ if conn is not None:
                              rating = rating_tags[0].contents
                              rating = "".join(rating)
                              print("rating: " + rating)
-                         else rating = ""
+                         else:
+                             rating = ""
 
                          # Save the services from the overview to the database
                          db_action = (name_service_overview, company, deviceslist, actionlist, rating)
