@@ -189,7 +189,7 @@ if conn is not None:
         soup_start = BeautifulSoup(start, "html.parser")
 
         # Browse the start page for categories and extract their names
-        for a in soup_start.find_all("a", "hSRGPd", href=True, jslog=True)[1:19]:
+        for a in soup_start.find_all("a", "hSRGPd", href=True, jslog=True)[2:19]:
             name_topcategory = a['aria-label']
             name_topcategory = "".join(name_topcategory)
             url = make_url(a['href'])
@@ -272,11 +272,13 @@ if conn is not None:
                         actionlist += action
                     print("actions: " + actionlist)
 
-                    # extract rating
+                    # extract rating if available
                     rating_tags = x.find_all("div", "NRNQAb")
-                    rating = rating_tags[0].contents
-                    rating = "".join(rating)
-                    print("rating: " + rating)
+                    if len(rating_tags) > 1:
+                        rating = rating_tags[0].contents
+                        rating = "".join(rating)
+                        print("rating: " + rating)
+                        continue
 
                     # Save the services to the database
                     db_action = (name_service, company, deviceslist, actionlist, rating)
