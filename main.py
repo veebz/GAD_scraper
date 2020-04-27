@@ -12,7 +12,7 @@ import datetime
 from retrying import retry
 from pprint import pprint
 
-geckodriver_autoinstaller.install()
+ geckodriver_autoinstaller.install()
 
 # Scraper for the Google Assistant Directory (Web version)
 
@@ -39,7 +39,7 @@ def db_create_action(conn, action):
     :param action:
     :return: id of new action in the table
     """
-    sql = ''' INSERT OR IGNORE INTO actions(name, company, devices, actions, ratings) VALUES(?,?,?,?,?) '''
+    sql = ''' INSERT OR IGNORE INTO actions(name, company, devices, actions, no_proposed_actions, ratings, number_ratings) VALUES(?,?,?,?,?,?,?) '''
     print(action)
     cur = conn.cursor()
     cur.execute(sql, action)
@@ -84,6 +84,10 @@ def save_html(url, filename):
     """
     browser = webdriver.Firefox(options=options)
     browser.get(url)
+    browser.execute_script("document.querySelector('.y3IDJd').scrollTop=10000000")
+    time.sleep(3)
+    browser.execute_script("document.querySelector('.y3IDJd').scrollTop=10000000")
+    time.sleep(3)
     browser.execute_script("document.querySelector('.y3IDJd').scrollTop=10000000")
     time.sleep(3)
     browser.execute_script("document.querySelector('.y3IDJd').scrollTop=10000000")
@@ -189,7 +193,7 @@ if conn is not None:
         soup_start = BeautifulSoup(start, "html.parser")
 
         # Browse the start page for categories and extract their names
-        for a in soup_start.find_all("a", "hSRGPd", href=True, jslog=True)[5:19]:
+        for a in soup_start.find_all("a", "hSRGPd", href=True, jslog=True)[1:19]:
             name_topcategory = a['aria-label']
             name_topcategory = "".join(name_topcategory)
             url = make_url(a['href'])
@@ -271,18 +275,18 @@ if conn is not None:
                         action = str(a.contents)
                         actionlist += action
                     print("actions: " + actionlist)
+                    no_actions = len(action_tags)
+                    print(no_actions, type(no_actions))
 
-                    # extract rating if available
-                    rating_tags = x.find_all("div", "NRNQAb")
-                    if len(rating_tags) > 1:
-                        rating = rating_tags[0].contents
-                        rating = "".join(rating)
-                        print("rating: " + rating)
-                    else:
-                        rating = ""
+                    # extract rating and number of ratings
+                    rating_tags = x.find("div", "NRNQAb")
+                    rating_int = int(re.sub('[^0-9]','', ''.join(rating_tags.contents)))
+                    number_of_user_ratings = x.find("div", "rriIab")
+                    number_of_user_ratings = ''.join(number_of_user_ratings.contents)
+                    number_of_user_ratings_int = int(re.sub('[^0-9]','', number_of_user_ratings))
 
                     # Save the services to the database
-                    db_action = (name_service, company, deviceslist, actionlist, rating)
+                    db_action = (name_service, company, deviceslist, actionlist, no_actions, rating_int, number_of_user_ratings_int)
                     action_id = db_create_action(conn, db_action)
 
                     # Save the category-action relationship
@@ -336,18 +340,17 @@ if conn is not None:
                              action = str(a.contents)
                              actionlist += action
                          print("actions: " + actionlist)
+                         no_actions = len(action_tags)
 
-                         # extract rating if available
-                         rating_tags = x.find_all("div", "NRNQAb")
-                         if len(rating_tags) > 1:
-                             rating = rating_tags[0].contents
-                             rating = "".join(rating)
-                             print("rating: " + rating)
-                         else:
-                             rating = ""
+                         # extract rating and number of ratings
+                         rating_tags = x.find("div", "NRNQAb")
+                         rating_int = int(re.sub('[^0-9]', '', ''.join(rating_tags.contents)))
+                         number_of_user_ratings = x.find("div", "rriIab")
+                         number_of_user_ratings = ''.join(number_of_user_ratings.contents)
+                         number_of_user_ratings_int = int(re.sub('[^0-9]', '', number_of_user_ratings))
 
                          # Save the services from the overview to the database
-                         db_action = (name_service_overview, company, deviceslist, actionlist, rating)
+                         db_action = (name_service_overview, company, deviceslist, actionlist, no_actions, rating_int, number_of_user_ratings_int)
                          action_id = db_create_action(conn, db_action)
 
                          # Save the category-action relationship
