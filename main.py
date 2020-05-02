@@ -12,7 +12,7 @@ import datetime
 from retrying import retry
 from pprint import pprint
 
-# geckodriver_autoinstaller.install()
+geckodriver_autoinstaller.install()
 
 # Scraper for the Google Assistant Directory (Web version)
 
