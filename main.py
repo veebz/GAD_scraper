@@ -12,7 +12,7 @@ import datetime
 from retrying import retry
 from pprint import pprint
 
-geckodriver_autoinstaller.install()
+# geckodriver_autoinstaller.install()
 
 # Scraper for the Google Assistant Directory (Web version)
 
@@ -39,7 +39,7 @@ def db_create_action(conn, action):
     :param action:
     :return: id of new action in the table
     """
-    sql = ''' INSERT OR IGNORE INTO actions(name, company, devices, actions, no_proposed_actions, ratings, number_ratings) VALUES(?,?,?,?,?,?,?) '''
+    sql = ''' INSERT OR IGNORE INTO actions(name, company, devices, actions, no_proposed_actions, ratings, number_ratings, claim) VALUES(?,?,?,?,?,?,?,?) '''
     print(action)
     cur = conn.cursor()
     cur.execute(sql, action)
@@ -278,15 +278,29 @@ if conn is not None:
                     no_actions = len(action_tags)
                     print(no_actions, type(no_actions))
 
-                    # extract rating and number of ratings
-                    rating_tags = x.find("div", "NRNQAb")
-                    rating_int = int(re.sub('[^0-9]','', ''.join(rating_tags.contents)))
+                    # extract rating and number of ratings if available
+                    rating_tag = x.find("div", "NRNQAb")
+                    if rating_tag is not None:
+                        rating_int = int(re.sub('[^0-9]','', ''.join(rating_tag.contents)))
+                    else:
+                        rating_int = int()
+
                     number_of_user_ratings = x.find("div", "rriIab")
-                    number_of_user_ratings = ''.join(number_of_user_ratings.contents)
-                    number_of_user_ratings_int = int(re.sub('[^0-9]','', number_of_user_ratings))
+                    if number_of_user_ratings is not None:
+                        number_of_user_ratings = ''.join(number_of_user_ratings.contents)
+                        number_of_user_ratings_int = int(re.sub('[^0-9]','', number_of_user_ratings))
+                    else:
+                        number_of_user_ratings = int()
+
+                    # check if there is a "Claim this page" button
+                    claim = x.find("span", "VfPpkd-vQzf8d")
+                    if claim is not None:
+                        claim = "true"
+                    else:
+                        claim = "false"
 
                     # Save the services to the database
-                    db_action = (name_service, company, deviceslist, actionlist, no_actions, rating_int, number_of_user_ratings_int)
+                    db_action = (name_service, company, deviceslist, actionlist, no_actions, rating_int, number_of_user_ratings_int, claim)
                     action_id = db_create_action(conn, db_action)
 
                     # Save the category-action relationship
@@ -342,15 +356,40 @@ if conn is not None:
                          print("actions: " + actionlist)
                          no_actions = len(action_tags)
 
-                         # extract rating and number of ratings
-                         rating_tags = x.find("div", "NRNQAb")
-                         rating_int = int(re.sub('[^0-9]', '', ''.join(rating_tags.contents)))
+                         # extract actions
+                         action_tags = x.find_all("span", "bCHKrf")
+                         actionlist = ""
+                         for a in action_tags:
+                             action = str(a.contents)
+                             actionlist += action
+                         print("actions: " + actionlist)
+                         no_actions = len(action_tags)
+                         print(no_actions, type(no_actions))
+
+                         # extract rating and number of ratings if available
+                         rating_tag = x.find("div", "NRNQAb")
+                         if rating_tag is not None:
+                             rating_int = int(re.sub('[^0-9]', '', ''.join(rating_tag.contents)))
+                         else:
+                             rating_int = int()
+
                          number_of_user_ratings = x.find("div", "rriIab")
-                         number_of_user_ratings = ''.join(number_of_user_ratings.contents)
-                         number_of_user_ratings_int = int(re.sub('[^0-9]', '', number_of_user_ratings))
+                         if number_of_user_ratings is not None:
+                             number_of_user_ratings = ''.join(number_of_user_ratings.contents)
+                             number_of_user_ratings_int = int(re.sub('[^0-9]', '', number_of_user_ratings))
+                         else:
+                             number_of_user_ratings = int()
+
+                         # check if there is a "Claim this page" button
+                         claim = x.find("span", "VfPpkd-vQzf8d")
+                         if claim is not None:
+                             claim = "true"
+                         else:
+                             claim = "false"
+
 
                          # Save the services from the overview to the database
-                         db_action = (name_service_overview, company, deviceslist, actionlist, no_actions, rating_int, number_of_user_ratings_int)
+                         db_action = (name_service_overview, company, deviceslist, actionlist, no_actions, rating_int, number_of_user_ratings_int, claim)
                          action_id = db_create_action(conn, db_action)
 
                          # Save the category-action relationship

@@ -48,7 +48,8 @@ def main():
                                         actions text,
                                         no_proposed_actions integer,
                                         ratings text,
-                                        number_ratings integer
+                                        number_ratings integer,
+                                        claim string
                                     );"""
 
     sql_create_action_category = """CREATE TABLE IF NOT EXISTS action_category (
