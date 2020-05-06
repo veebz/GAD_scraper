@@ -193,7 +193,7 @@ if conn is not None:
         soup_start = BeautifulSoup(start, "html.parser")
 
         # Browse the start page for categories and extract their names
-        for a in soup_start.find_all("a", "hSRGPd", href=True, jslog=True)[1:19]:
+        for a in soup_start.find_all("a", "hSRGPd", href=True, jslog=True)[6:18]:
             name_topcategory = a['aria-label']
             name_topcategory = "".join(name_topcategory)
             url = make_url(a['href'])
