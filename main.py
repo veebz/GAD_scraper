@@ -256,9 +256,11 @@ if conn is not None:
 
                     # extract company name
                     company_tags = x.find_all("div", "lUcxUb CbqDob")
-                    company = company_tags[0].contents
-                    company = "".join(company)
-                    print("company: " + company)
+                    if not company_tags:
+                        company = str()
+                    else:
+                        company = company_tags[0].contents
+                        company = "".join(company)
 
                     # extract devices and make string
                     devices_tags = x.find_all("div", "rkJR4e CdFZQ")
@@ -335,9 +337,11 @@ if conn is not None:
 
                          # extract company name
                          company_tags = x.find_all("div", "lUcxUb CbqDob")
-                         company = company_tags[0].contents
-                         company = "".join(company)
-                         print("company: " + company)
+                         if not company_tags:
+                             company = str()
+                         else:
+                            company = company_tags[0].contents
+                            company = "".join(company)
 
                          # extract devices and make string
                          devices_tags = x.find_all("div", "rkJR4e CdFZQ")
@@ -386,7 +390,6 @@ if conn is not None:
                              claim = "true"
                          else:
                              claim = "false"
-
 
                          # Save the services from the overview to the database
                          db_action = (name_service_overview, company, deviceslist, actionlist, no_actions, rating_int, number_of_user_ratings_int, claim)
