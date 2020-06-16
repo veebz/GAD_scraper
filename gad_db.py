@@ -44,6 +44,7 @@ def main():
                                         id integer PRIMARY KEY,
                                         name text UNIQUE NOT NULL, 
                                         company text,
+                                        description text,
                                         devices text,
                                         actions text,
                                         no_proposed_actions integer,

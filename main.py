@@ -39,7 +39,7 @@ def db_create_action(conn, action):
     :param action:
     :return: id of new action in the table
     """
-    sql = ''' INSERT OR IGNORE INTO actions(name, company, devices, actions, no_proposed_actions, ratings, number_ratings, claim) VALUES(?,?,?,?,?,?,?,?) '''
+    sql = ''' INSERT OR IGNORE INTO actions(name, company, description, devices, actions, no_proposed_actions, ratings, number_ratings, claim) VALUES(?,?,?,?,?,?,?,?,?) '''
     print(action)
     cur = conn.cursor()
     cur.execute(sql, action)
@@ -193,7 +193,7 @@ if conn is not None:
         soup_start = BeautifulSoup(start, "html.parser")
 
         # Browse the start page for categories and extract their names
-        for a in soup_start.find_all("a", "hSRGPd", href=True, jslog=True)[18:19]:
+        for a in soup_start.find_all("a", "hSRGPd", href=True, jslog=True)[1:19]:
             name_topcategory = a['aria-label']
             name_topcategory = "".join(name_topcategory)
             url = make_url(a['href'])
@@ -262,6 +262,14 @@ if conn is not None:
                         company = company_tags[0].contents
                         company = "".join(company)
 
+                    # extract description of action
+                    description_tags = x.find_all("div", "IB9ccf")
+                    if description_tags is not None:
+                        description = description_tags[0].contents
+                        description = "".join(description)
+                    else:
+                        description = str()
+
                     # extract devices and make string
                     devices_tags = x.find_all("div", "rkJR4e CdFZQ")
                     deviceslist = ""
@@ -302,7 +310,7 @@ if conn is not None:
                         claim = "false"
 
                     # Save the services to the database
-                    db_action = (name_service, company, deviceslist, actionlist, no_actions, rating_int, number_of_user_ratings_int, claim)
+                    db_action = (name_service, company, description, deviceslist, actionlist, no_actions, rating_int, number_of_user_ratings_int, claim)
                     action_id = db_create_action(conn, db_action)
 
                     # Save the category-action relationship
@@ -342,6 +350,14 @@ if conn is not None:
                          else:
                             company = company_tags[0].contents
                             company = "".join(company)
+
+                         # extract description of action
+                         description_tags = x.find_all("div", "IB9ccf")
+                         if description_tags is not None:
+                             description = description_tags[0].contents
+                             description = "".join(description)
+                         else:
+                             description = str()
 
                          # extract devices and make string
                          devices_tags = x.find_all("div", "rkJR4e CdFZQ")
@@ -392,7 +408,7 @@ if conn is not None:
                              claim = "false"
 
                          # Save the services from the overview to the database
-                         db_action = (name_service_overview, company, deviceslist, actionlist, no_actions, rating_int, number_of_user_ratings_int, claim)
+                         db_action = (name_service_overview, company, description, deviceslist, actionlist, no_actions, rating_int, number_of_user_ratings_int, claim)
                          action_id = db_create_action(conn, db_action)
 
                          # Save the category-action relationship
